@@ -11,18 +11,31 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-
+/**
+ * Enqueue plugin styles.
+ */
 function weather_import_enqueue_styles() {
-    // Path to the CSS file in the plugin folder
+
     wp_enqueue_style('weather-import-style', plugin_dir_url(__FILE__) . 'css/style.css');
 }
+/**
+ * Add an uninstall hook to clean up the database.
+ */
+register_uninstall_hook(__FILE__, 'weather_import_uninstall');
+
+function weather_import_uninstall() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'weather_data';
+    $wpdb->query("DROP TABLE IF EXISTS $table_name");
+}
 add_action('wp_enqueue_scripts', 'weather_import_enqueue_styles');
-
-// Hook to run the CSV import process when the plugin is activated.
+/**
+ * Hook to run the CSV import process when the plugin is activated.
+ */
 register_activation_hook(__FILE__, 'weather_import_activate');
-
-register_activation_hook(__FILE__, 'weather_import_activate');
-
+/**
+ * Activate the plugin.
+ */
 function weather_import_activate() {
     global $wpdb;
 
@@ -43,10 +56,9 @@ function weather_import_activate() {
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
 }
-
-
-
-// Add both Weather Settings and Scrap Cron Settings to the admin menu
+/**
+ * Add settings page to admin menu.
+ */
 add_action('admin_menu', 'weather_settings_menu');
 function weather_settings_menu() {
     add_menu_page(
@@ -71,8 +83,9 @@ function weather_settings_menu() {
         'scrap_cron_settings_page' // Callback function
     );
 }
-
-// Weather Settings page
+/**
+ * Display the Weather Settings page.
+ */
 function weather_settings_page() {
     global $wpdb;
 
@@ -116,8 +129,9 @@ function weather_settings_page() {
     </div>
     <?php
 }
-
-
+/**
+ * Display Scrap Cron Settings page.
+ */
 function scrap_cron_settings_page() {
     if (!current_user_can('manage_options')) {
         return;
@@ -155,16 +169,17 @@ function scrap_cron_settings_page() {
         </form>
     </div>
     <?php
-}// Scrap Cron Settings page
-
-// Register the [weather_region_data] shortcode
+}
+/**
+ * Register the [weather_region_data] shortcode.
+ */
 function register_weather_region_data_shortcode() {
     add_shortcode('weather_region_data', 'weather_region_data_shortcode');
 }
 add_action('init', 'register_weather_region_data_shortcode');
-
-
-
+/**
+ * Shortcode to display weather region data.
+ */
 function weather_region_data_shortcode($atts) {
     global $wpdb;
 
@@ -227,22 +242,9 @@ function weather_region_data_shortcode($atts) {
 
     return $output;
 }
-
-
-
-// Add an uninstall hook to clean up the database.
-register_uninstall_hook(__FILE__, 'weather_import_uninstall');
-
-function weather_import_uninstall() {
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'weather_data';
-    $wpdb->query("DROP TABLE IF EXISTS $table_name");
-}
-
-
-// 2. Create a Custom Cron Schedule Based on User Input
-
-// Register custom cron schedule
+/**
+ * Schedule the cron event.
+ */
 function scrap_cron_add_schedule($schedules) {
     // Get user-defined interval (in hours)
     $interval = get_option('scrap_cron_interval', 24); // Default to 24 hours if no setting exists
@@ -258,7 +260,6 @@ function scrap_cron_add_schedule($schedules) {
 }
 add_filter('cron_schedules', 'scrap_cron_add_schedule');
 
-// Schedule the cron event
 function scrap_schedule_cron_job() {
     if (!wp_next_scheduled('scrap_cron_event')) {
         // Get the user-defined interval and convert it to seconds
@@ -270,7 +271,9 @@ function scrap_schedule_cron_job() {
     }
 }
 add_action('wp', 'scrap_schedule_cron_job');
-
+/**
+ * Cron event callback to run the scraper.
+ */
 function scrap_cron_event_callback() {
     // Path to your scraper file
     $scrap_file = plugin_dir_path(__FILE__) . 'ts-automation.php';
