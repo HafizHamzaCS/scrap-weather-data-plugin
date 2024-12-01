@@ -73,4 +73,3 @@ foreach ($data as $row) {
 }
 
 echo "Weather data successfully imported into the database!";
-?>

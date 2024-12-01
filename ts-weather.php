@@ -3,8 +3,8 @@
  * Plugin Name: TS Weather
  * Description: Automatically imports weather data from a predefined CSV file into the WordPress database and displays it using a shortcode.
  * Version: 1.0
- * Author: M.Bahawal
- * Author URI: https://techosolutiom.com/
+ * Author: Hafiz Hamza Javed
+ * Author URI: https://github.com/HafizHamzaCS/scrap-weather-data-plugin
  */
 
 // Prevent direct access to the file.
@@ -46,7 +46,6 @@ function weather_import_activate() {
 
 
 
-// Add a settings page
 // Add both Weather Settings and Scrap Cron Settings to the admin menu
 add_action('admin_menu', 'weather_settings_menu');
 function weather_settings_menu() {
